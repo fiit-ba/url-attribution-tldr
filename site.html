@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Token Attribution — Research Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --ink: #1a1714;
+    --ink-mid: #4a4540;
+    --ink-light: #8a837a;
+    --rule: #d4cec5;
+    --accent: #c84b2f;
+    --accent2: #2b5f8e;
+    --accent3: #3d7a52;
+    --tag-bg: #e8e3da;
+    --card: #fff;
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* Header */
+  .header {
+    border-top: 3px solid var(--ink);
+    padding-top: 28px;
+    margin-bottom: 48px;
+  }
+  .header-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 42px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-family: var(--sans);
+    font-size: 16px;
+    color: var(--ink-mid);
+    font-weight: 300;
+    margin-bottom: 20px;
+    max-width: 580px;
+  }
+  .header-rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin-top: 24px;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 52px;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: 26px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+    margin: 24px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  p {
+    color: var(--ink-mid);
+    margin-bottom: 12px;
+    font-weight: 300;
+    max-width: 720px;
+  }
+  p strong { color: var(--ink); font-weight: 500; }
+
+  /* URL anatomy display */
+  .url-display {
+    background: var(--ink);
+    color: #f5f2eb;
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 20px 24px;
+    border-radius: 4px;
+    margin: 16px 0 8px;
+    letter-spacing: 0.02em;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .url-scheme { color: #7ec8e3; }
+  .url-subdomain { color: #f4c95d; }
+  .url-domain { color: #e07b54; }
+  .url-tld { color: #c7a0d4; }
+  .url-sep { color: #666; }
+  .url-path { color: #7ecb9b; }
+  .url-query { color: #f09090; }
+
+  .url-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 16px 18px;
+  }
+  .card-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .card-body {
+    font-size: 13px;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .card-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--tag-bg);
+    color: var(--ink-light);
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .card.accent-left {
+    border-left: 3px solid var(--accent);
+  }
+  .card.accent2-left {
+    border-left: 3px solid var(--accent2);
+  }
+  .card.accent3-left {
+    border-left: 3px solid var(--accent3);
+  }
+
+  /* Method comparison table */
+  .method-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0 20px;
+  }
+  .method-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--rule);
+    font-weight: 500;
+  }
+  .method-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-mid);
+    vertical-align: top;
+    font-weight: 300;
+  }
+  .method-table tr:last-child td { border-bottom: none; }
+  .method-table td:first-child { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; }
+  .dot-good { color: var(--accent3); }
+  .dot-mid  { color: #c49a2a; }
+  .dot-bad  { color: var(--accent); }
+
+  /* Pipeline */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 16px 0 20px;
+    overflow-x: auto;
+  }
+  .pipe-step {
+    flex: 1;
+    min-width: 110px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    padding: 14px 12px;
+    position: relative;
+  }
+  .pipe-step + .pipe-step {
+    border-left: none;
+  }
+  .pipe-step:first-child { border-radius: 4px 0 0 4px; }
+  .pipe-step:last-child  { border-radius: 0 4px 4px 0; }
+  .pipe-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
+  .pipe-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .pipe-desc {
+    font-size: 11px;
+    color: var(--ink-light);
+    line-height: 1.4;
+    font-weight: 300;
+  }
+
+  /* Experiment blocks */
+  .exp-block {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .exp-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .exp-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    line-height: 1;
+    color: var(--rule);
+    flex-shrink: 0;
+    margin-top: -2px;
+  }
+  .exp-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .exp-rq {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+  }
+  .exp-body {
+    font-size: 13px;
+    color: var(--ink-mid);
+    font-weight: 300;
+    line-height: 1.6;
+    padding-left: 42px;
+  }
+  .exp-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    padding-left: 42px;
+  }
+  .metric-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--tag-bg);
+    color: var(--ink-mid);
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Related work items */
+  .ref-item {
+    border-bottom: 1px solid var(--rule);
+    padding: 12px 0;
+  }
+  .ref-item:last-child { border-bottom: none; }
+  .ref-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .ref-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-light);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+  .ref-why {
+    font-size: 12px;
+    color: var(--ink-mid);
+    font-weight: 300;
+  }
+
+  /* Discussion callout */
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    background: rgba(200, 75, 47, 0.05);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 12px;
+  }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .callout p {
+    font-size: 13px;
+    margin: 0;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+    margin-top: 48px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-light);
+    letter-spacing: 0.08em;
+  }
+
+  ul {
+    padding-left: 18px;
+    color: var(--ink-mid);
+    font-weight: 300;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  li { margin-bottom: 3px; }
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--tag-bg);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  @media (max-width: 600px) {
+    .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+    .pipeline { flex-direction: column; }
+    .pipe-step + .pipe-step { border-left: 1px solid var(--rule); border-top: none; }
+    .pipe-step:first-child { border-radius: 4px 4px 0 0; }
+    .pipe-step:last-child  { border-radius: 0 0 4px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-meta">Research Plan · URL Token Attribution</div>
+  <h1>Which parts of a URL<br><em>actually matter?</em></h1>
+  <p class="subtitle">A research plan for understanding URL token attribution in query-driven web crawling — what encoder, decoder, and hybrid models attend to when deciding if a link is worth following.</p>
+  <hr class="header-rule">
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 0: PROBLEM FRAMING -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">00 · Problem framing</div>
+  <h2>The core question</h2>
+
+  <p>A query-driven crawler discovers a list of URLs it has not yet fetched. It must order them. The only signal available <strong>before fetching</strong> is the URL string itself (plus possibly the anchor text of the link that pointed to it). The question is: <strong>which tokens within that URL string predict that the target page is relevant to the user's query?</strong></p>
+  <p>This has two layers — first, building a model that scores URL relevance, and second, explaining which parts of the URL drove that score. The second layer is the novel contribution: no crawling paper has produced per-token attribution over URL strings in a crawl context.</p>
+
+  <div class="url-display">
+    <span class="url-scheme">https</span><span class="url-sep">://</span><span class="url-subdomain">docs</span><span class="url-sep">.</span><span class="url-domain">pytorch</span><span class="url-sep">.</span><span class="url-tld">org</span><span class="url-sep">/</span><span class="url-path">stable</span><span class="url-sep">/</span><span class="url-path">optim</span><span class="url-sep">/</span><span class="url-path">torch.optim.Adam</span><span class="url-query">?highlight=adam</span>
+  </div>
+  <div class="url-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#7ec8e3"></div>scheme</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f4c95d"></div>subdomain</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e07b54"></div>domain</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c7a0d4"></div>TLD</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7ecb9b"></div>path tokens</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f09090"></div>query params</div>
+  </div>
+
+  <p>Query: <code>"how do I use Adam optimizer in PyTorch"</code>. The domain <code>pytorch</code>, the subdomain <code>docs</code>, and the path token <code>optim</code> are highly predictive. The scheme and TLD are nearly uninformative. <strong>Can a model learn this, and can we measure which tokens it learned to use?</strong></p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 1: BACKGROUND TO LEARN -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">01 · Background to acquire</div>
+  <h2>What to learn before starting</h2>
+
+  <div class="card-grid">
+    <div class="card accent-left">
+      <div class="card-tag">Foundational</div>
+      <div class="card-title">URL feature engineering</div>
+      <div class="card-body">URL tokenization strategies: delimiter-based (<code>/</code>, <code>.</code>, <code>-</code>, <code>?</code>, <code>=</code>), WordPiece (BERT-style subword), character n-gram, and hybrid. Understand how each treats e.g. <code>torch.optim.Adam</code> differently. Key papers: Kan &amp; Thi (2005) "Fast Webpage Classification Using URL Features", Baykan et al. (2011).</div>
+    </div>
+    <div class="card accent-left">
+      <div class="card-tag">Foundational</div>
+      <div class="card-title">Transformer architectures</div>
+      <div class="card-body">Encoder-only (BERT, RoBERTa): bidirectional context, good for classification. Decoder-only (GPT, Llama): autoregressive, can be prompted. Encoder-decoder (T5, BART): sequence-to-sequence. Bi-encoder vs. cross-encoder distinction — critical for latency vs. accuracy tradeoff in URL scoring.</div>
+    </div>
+    <div class="card accent2-left">
+      <div class="card-tag">Attribution methods</div>
+      <div class="card-title">SHAP for NLP</div>
+      <div class="card-body">Partition SHAP and KernelSHAP for text inputs. Shapley values from cooperative game theory — each token's marginal contribution averaged across all coalitions. Key library: <code>shap</code>. For transformers specifically: <code>shap.Explainer</code> with a pipeline. Learn the "sufficiency" and "comprehensiveness" faithfulness criteria.</div>
+    </div>
+    <div class="card accent2-left">
+      <div class="card-tag">Attribution methods</div>
+      <div class="card-title">Integrated Gradients</div>
+      <div class="card-body">Sundararajan et al. (2017) "Axiomatic Attribution for Deep Networks." Integrates the model gradient along a path from a baseline input to the real input. Satisfies completeness axiom. Implemented in <code>captum</code> (PyTorch). Works natively on token embeddings — gives signed attribution per token.</div>
+    </div>
+    <div class="card accent2-left">
+      <div class="card-tag">Attribution methods</div>
+      <div class="card-title">Attention rollout &amp; gradient×attention</div>
+      <div class="card-body">Raw attention weights are not attribution scores — they reflect routing, not causal contribution. Attention rollout (Abnar &amp; Zuidema, 2020) propagates attention across layers. Gradient×attention (Jain &amp; Wallace, 2019) is more faithful. Study both as baselines to compare against IG and SHAP.</div>
+    </div>
+    <div class="card accent2-left">
+      <div class="card-tag">Attribution methods</div>
+      <div class="card-title">LIME &amp; occlusion</div>
+      <div class="card-body">LIME fits a local linear model around a perturbed instance. Occlusion/ablation replaces individual tokens with <code>[MASK]</code> and measures the score drop — the simplest faithfulness test. Both serve as sanity-check baselines for the more sophisticated methods.</div>
+    </div>
+    <div class="card accent3-left">
+      <div class="card-tag">IR / crawling</div>
+      <div class="card-title">Focused crawling literature</div>
+      <div class="card-body">Reviewed: Craw4LLM (2025), Neural Prioritisation ICTIR (2025), Pezzuti et al. (2025). Key concept: harvest ratio, speedup over BFS. Understand why URL-only scoring is appealing — no fetch needed, zero latency overhead.</div>
+    </div>
+    <div class="card accent3-left">
+      <div class="card-tag">IR / crawling</div>
+      <div class="card-title">Cross-encoder relevance models</div>
+      <div class="card-body">MonoBERT, MonoT5, DPR. How <code>[CLS, query, SEP, document, SEP]</code> produces a relevance score. In your setting, "document" = URL string. Fine-tuning on query-URL pairs with binary or graded relevance labels. MS MARCO as the standard fine-tuning dataset.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 2: RELATED WORK -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">02 · Related work</div>
+  <h2>What already exists</h2>
+
+  <h3>Crawling systems</h3>
+  <p>These are the practical systems your attribution work would plug into. Understanding their frontier architecture is necessary to motivate why URL-only scoring matters — each system has a priority queue that needs a fast per-URL score before fetching.</p>
+
+  <div class="ref-item">
+    <div class="ref-title">Apache Nutch — Cutting &amp; Cafarella (2004)</div>
+    <div class="ref-meta">Apache Foundation · Production web-scale crawler</div>
+    <div class="ref-why">The canonical open-source crawler. Hadoop-based batch architecture: generate URL list → fetch → parse → update crawlDB. Used by Common Crawl since 2014 to produce the 900M-page datasets used in Craw4LLM. Understands why URL ordering matters: Nutch's <code>generate</code> step selects and scores URLs from the crawlDB before fetching. Your attribution work would inform how that scoring function should be designed.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Heritrix — Mohr et al. (2004), Internet Archive</div>
+    <div class="ref-meta">Internet Archive · Archival-quality crawler</div>
+    <div class="ref-why">JVM-based, single-machine archival crawler. Strictly respects robots.txt and politeness delays. Used for focused web archiving — exactly the setting where query-driven URL prioritisation matters most. Reference for how frontier management is done in a production system with politeness constraints (the same constraint that makes on-the-fly neural scoring attractive — you score during the wait).</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Scrapy — Zyte (2008, open source)</div>
+    <div class="ref-meta">Python ecosystem · Most widely used focused crawler</div>
+    <div class="ref-why">Python-based async crawler, most popular for focused/domain-specific crawling. The <strong>Frontera</strong> extension provides a pluggable crawl frontier with priority queues — this is the exact integration point for a URL attribution scorer. Research using Scrapy + Frontera would be reproducible and immediately usable by practitioners.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">StormCrawler — DigitalPebble (2014)</div>
+    <div class="ref-meta">Apache Storm · Real-time stream-based crawler</div>
+    <div class="ref-why">Stream-based rather than batch — URLs are continuously fetched, parsed, and scored in a DAG topology. This real-time model is the one where a fast URL scorer is most critical: there's no batch step to amortise the scoring cost over. Motivates the latency row in the model comparison table.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Crawl4AI — open source (2024)</div>
+    <div class="ref-meta">Python / AI-first · Modern agentic crawler</div>
+    <div class="ref-why">Modern AI-oriented crawler with a <code>BestFirstCrawlingStrategy</code> that already implements a priority queue scored by a keyword scorer. Your work directly replaces that scorer with a model-backed URL attribution-guided one. Good system to demonstrate the implementation in — it's Python, it's actively maintained, and its scoring API is documented.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Common Crawl</div>
+    <div class="ref-meta">Non-profit · Open web crawl dataset</div>
+    <div class="ref-why">Produces petabyte-scale open snapshots of the web used in LLM training. Uses harmonic centrality as its URL priority signal. Your work proposes a query-conditioned alternative to this purely graph-based signal. ClueWeb22 (used in Craw4LLM experiments) is a snapshot from a similar commercial crawl — your experimental dataset.</div>
+  </div>
+
+  <h3>Neural crawling systems (SOTA context)</h3>
+
+  <div class="ref-item">
+    <div class="ref-title">Craw4LLM — Yu, Liu &amp; Xiong (ACL Findings 2025)</div>
+    <div class="ref-meta">arXiv:2502.13347 · SOTA for LLM-pretraining crawls</div>
+    <div class="ref-why">Replaces PageRank with a fastText-based <em>pretraining influence scorer</em> as the frontier priority signal. With 21% of URLs crawled, LLMs pretrained on the data match downstream performance of full crawls. Evaluated on ClueWeb22 (900M pages). This is the direct SOTA baseline your crawl evaluation (E5) must beat or match — and the key gap it leaves is that it scores pages by <em>general quality</em>, not by alignment to a specific user query. URL token attribution is exactly what fills that gap.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Neural Prioritisation for Web Crawling — ICTIR 2025</div>
+    <div class="ref-meta">arXiv:2506.16146 · QMin / QFirst policies</div>
+    <div class="ref-why">Introduces quality propagation over the link graph: score a page's unvisited neighbours using the already-crawled page's LLM quality estimate. QMin (exploit minimum ancestor quality) achieves 1.6× speedup over BFS. QFirst is more exploration-oriented. Key finding: neural estimators identify <em>low</em>-quality pages better than high-quality ones — which is why QMin (avoid worst) beats a "pick best" policy. Your work complements this: rather than propagating quality through the graph, you extract a signal directly from the URL string before any fetch occurs.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Document Quality Scoring for Web Crawling — Pezzuti et al. (2025)</div>
+    <div class="ref-meta">arXiv:2504.11011 · LLM-driven oracle crawling</div>
+    <div class="ref-why">Establishes a theoretical oracle upper bound on crawl quality by using an LLM to perfectly prioritise pages. Also empirically confirms that high-quality pages tend to link to each other — motivating neighbourhood quality propagation. Important for framing: this oracle requires fetching the page content before scoring it. URL token attribution is a complementary signal that requires <em>no fetch</em> — positioning your contribution as a lightweight pre-fetch filter rather than a replacement for content-based scoring.</div>
+  </div>
+
+  <h3>URL classification &amp; relevance prediction</h3>
+
+  <div class="ref-item">
+    <div class="ref-title">Fast Webpage Classification Using URL Features — Kan &amp; Thi (2005)</div>
+    <div class="ref-meta">WWW 2005 · Foundational</div>
+    <div class="ref-why">First systematic study of URL token sequences as a tree structure for classification. Introduced component-qualified features (token + its URL component origin). Key insight: subdomain and path tokens encode different information. Directly relevant to your tokenization design.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Analyzing URL Structure for Machine Learning — (ISERT 2024)</div>
+    <div class="ref-meta">ISERT 2024 · Feature engineering</div>
+    <div class="ref-why">Uses SHAP over hand-engineered URL features (host, TLD, path length, token count) to assess feature relevance. Closest existing work to your idea, but uses hand-crafted features rather than token-level attribution from a neural model. Good baseline and framing reference.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Cross-language focused crawling: URL relevance prediction — (2008)</div>
+    <div class="ref-meta">ScienceDirect · Empirical confirmation</div>
+    <div class="ref-why">Empirically showed that most relevant pages contain the topic token in their URL. Established that URL tokens are a valid predictor of relevance — but used lexical matching, not learned attribution. Your contribution is to replace this with a differentiable model and measure what it learns.</div>
+  </div>
+
+  <h3>Attribution / interpretability for transformers</h3>
+
+  <div class="ref-item">
+    <div class="ref-title">Axiomatic Attribution for Deep Networks — Sundararajan et al. (2017)</div>
+    <div class="ref-meta">ICML 2017 · Integrated Gradients</div>
+    <div class="ref-why">Foundational method. Defines the completeness axiom (attribution scores sum to prediction difference from baseline). The go-to method for token-level attribution in transformers. You'll implement this via <code>captum.attr.IntegratedGradients</code>.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">BERT Meets Shapley — Kokalj et al. (EACL 2021)</div>
+    <div class="ref-meta">EACL Hackashop 2021 · SHAP for BERT</div>
+    <div class="ref-why">Extends SHAP to transformer classifiers. Shows that SHAP applied to BERT token embeddings produces human-aligned explanations. The methodology section is directly transplantable to URL token attribution over a fine-tuned BERT.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Is Attention Explanation? — Jain &amp; Wallace (2019)</div>
+    <div class="ref-meta">NAACL 2019 · Attention skepticism</div>
+    <div class="ref-why">Critical result: attention weights are not necessarily faithful explanations of model predictions. Motivates using IG and SHAP as primary attribution methods rather than raw attention, with attention rollout as a comparison baseline only.</div>
+  </div>
+  <div class="ref-item">
+    <div class="ref-title">Quantifying Attention Flow — Abnar &amp; Zuidema (2020)</div>
+    <div class="ref-meta">ACL 2020 · Attention rollout</div>
+    <div class="ref-why">Proposes attention rollout as a more faithful attention-based attribution by propagating attention across all transformer layers. Use as the attention-based baseline in your method comparison.</div>
+  </div>
+
+  <h3>Malicious URL detection (adjacent field)</h3>
+
+  <div class="ref-item">
+    <div class="ref-title">A Survey of Malicious URL Detection — Sahoo et al. (2019)</div>
+    <div class="ref-meta">ACM Computing Surveys · Adjacent</div>
+    <div class="ref-why">Rich feature taxonomy for URL analysis: lexical features, host-based, content-based. The tokenization strategies (delimiter-based, character n-gram) are directly reusable. Key difference: their task is malicious vs. benign, yours is relevant vs. irrelevant to a query — so the important tokens will differ.</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 3: METHODOLOGY -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">03 · Methodology</div>
+  <h2>How to build it</h2>
+
+  <h3>Step 1 — URL tokenization</h3>
+  <p>URLs are not natural language — tokenization strategy matters. The choice here is <strong>WordPiece / BPE</strong>: feed the raw URL directly to the pretrained tokenizer of whatever model you're using. This is the only approach needed because you're using off-the-shelf models that already have fixed tokenizers — feeding them a different tokenization would break the embedding space they were trained in.</p>
+
+  <div class="card">
+    <div class="card-tag">Strategy — WordPiece / BPE (subword)</div>
+    <div class="card-title">Feed raw URL to the model's pretrained tokenizer</div>
+    <div class="card-body">
+      The model's own tokenizer (BERT WordPiece, T5 SentencePiece, etc.) processes the URL string directly. Example: <code>pytorch.org/stable/optim</code> → <code>py ##torch . org / stable / op ##tim</code>. This preserves compatibility with the pretrained embedding space — critical since you are not fine-tuning. The subword splits may fragment meaningful slugs (<code>optim</code> → <code>op ##tim</code>), which is the core tension your attribution analysis will surface.
+      <br><br>
+      <strong>Component annotation:</strong> after tokenization, label each token with its structural origin (scheme / host / path / query-param) using a lightweight delimiter parser run <em>before</em> passing to the model. This annotation is used only during attribution aggregation — not as model input — so it doesn't interfere with the pretrained tokenizer.
+    </div>
+  </div>
+  <p>The interesting research question that follows directly: when the tokenizer fragments a meaningful URL slug into subwords, does the model's attribution still correctly identify the <em>semantic</em> unit (the full slug) as important, or does attribution scatter across the fragments? This is a concrete hypothesis you can test using your synthetic dataset.</p>
+
+  <h3>Step 2 — Architecture families to compare</h3>
+  <p>You want attribution results across different architectural families to answer: do different architectures agree on which URL tokens matter? Disagreement is itself a finding. Pick one strong representative per family — the specific checkpoint is secondary to the architecture type.</p>
+
+  <table class="method-table">
+    <thead>
+      <tr>
+        <th>Architecture family</th>
+        <th>Input format</th>
+        <th>How score is extracted</th>
+        <th>Attribution method</th>
+        <th>Key property for your study</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Cross-encoder<br>(encoder-only)</td>
+        <td><code>[CLS] query [SEP] url [SEP]</code></td>
+        <td>Linear head over <code>[CLS]</code> token → scalar relevance logit</td>
+        <td>Integrated Gradients, SHAP, Attention rollout</td>
+        <td>Full query–URL cross-attention at every layer. Attribution spans both sides — can see which URL token each query token attends to. The most interpretable family for your purposes.</td>
+      </tr>
+      <tr>
+        <td>Bi-encoder<br>(dual encoder)</td>
+        <td>Query and URL encoded separately; similarity = dot product of <code>[CLS]</code> embeddings</td>
+        <td>Cosine / inner product between query and URL embeddings</td>
+        <td>IG on URL encoder only (query encoder is fixed)</td>
+        <td>No cross-attention — attribution is <em>query-independent</em> per URL. Reveals what the URL encoder has learned about URL structure in isolation. Attribution here answers: which URL tokens make a URL look "good" regardless of the query?</td>
+      </tr>
+      <tr>
+        <td>Late-interaction<br>(token-level bi-encoder)</td>
+        <td>Per-token embeddings for query and URL; relevance = MaxSim over all token pairs</td>
+        <td>Sum of max cosine similarities between each query token and all URL tokens</td>
+        <td>MaxSim scores are natively interpretable — no IG needed. Each query token has an explicit "best match" URL token.</td>
+        <td>Attribution is architectural and exact — the MaxSim operation directly reveals which URL token matched each query token. Use as a ground-truth reference to validate whether IG/SHAP on cross-encoders agree.</td>
+      </tr>
+      <tr>
+        <td>Encoder-decoder<br>(sequence-to-sequence)</td>
+        <td><code>Query: [q] Document: [url] Relevant:</code> → generates "true" / "false"</td>
+        <td>Log-probability of "true" token as relevance score</td>
+        <td>IG on encoder input embeddings; decoder cross-attention as secondary signal</td>
+        <td>Generation-as-scoring. The decoder attends back to encoder tokens — decoder cross-attention shows which URL tokens the model "looks at" when generating its relevance verdict.</td>
+      </tr>
+      <tr>
+        <td>Decoder-only LLM<br>(prompted ranker)</td>
+        <td>Natural language prompt: "Given query [q], is URL [url] relevant? Answer yes/no."</td>
+        <td>Log-probability of "yes" / "no" output token</td>
+        <td>IG on input token embeddings; token-level SHAP</td>
+        <td>World-knowledge about domains baked in from pretraining. Slow but useful as a ceiling. May attend to different URL features (e.g. recognise known authority domains like <code>arxiv.org</code>) that smaller models miss.</td>
+      </tr>
+      <tr>
+        <td>Sparse lexical<br>(BM25)</td>
+        <td>URL tokens as document bag-of-words; query terms matched against them</td>
+        <td>BM25 / TF-IDF score</td>
+        <td>IDF weight per matching token — attribution is the scoring formula itself</td>
+        <td>Fully transparent baseline. Attributions are exact and auditable. Any neural model that agrees with BM25 attributions on URL tokens is just doing lexical matching — anything beyond that is the neural contribution.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Key framing — no training needed</div>
+    <p>All families above have off-the-shelf pretrained checkpoints trained on MS MARCO query-passage pairs. You feed them <code>(query, URL string)</code> and extract the score. Your contribution is not building a better scorer — it is <strong>auditing what existing scorers attend to</strong> inside a URL, across all five architectural families, and comparing whether they agree.</p>
+  </div>
+
+  <h3>Step 3 — Data: evaluation only, no training split needed</h3>
+  <p>Since there's no training, you don't need labelled data to <em>run</em> the models — they score any (query, URL) pair. Labels are only needed to evaluate whether the scores are actually correct (experiments E1 baseline, E5). The sources below serve evaluation only:</p>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-tag">Primary</div>
+      <div class="card-title">MS MARCO Passage / Web Search</div>
+      <div class="card-body">~8.8M query-passage pairs with URLs, binary relevance. This is also what all the off-the-shelf rerankers were trained on. Use for evaluation — do the existing models' scores correlate with labels when the "passage" is just the URL string? MS MARCO Web Search (2024) adds click labels at web scale.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Evaluation</div>
+      <div class="card-title">TREC Web Track</div>
+      <div class="card-body">Graded relevance (0–3) for ~50 queries over ClueWeb09/12. Smaller but more carefully judged. Use for held-out evaluation. Graded labels let you measure whether attribution scores correlate with relevance grade, not just binary label.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Controlled</div>
+      <div class="card-title">Synthetic controlled dataset</div>
+      <div class="card-body">Construct URLs where you know the answer: inject the query keyword into path vs. domain vs. query-param and measure whether the model's attribution correctly identifies the injected token. This is your "ground truth" for attribution faithfulness.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Optional</div>
+      <div class="card-title">ClueWeb22 + Craw4LLM setup</div>
+      <div class="card-body">900M URLs with quality scores from commercial crawl. Pairs well with the crawl simulation angle — you can extract (URL, quality_score) and treat quality as a relevance proxy. Allows large-scale attribution analysis.</div>
+    </div>
+  </div>
+
+  <h3>Step 4 — Attribution pipeline</h3>
+  <div class="pipeline">
+    <div class="pipe-step">
+      <span class="pipe-num">01</span>
+      <span class="pipe-name">Tokenize URL</span>
+      <span class="pipe-desc">WordPiece via model's own tokenizer. Annotate each token with URL component origin.</span>
+    </div>
+    <div class="pipe-step">
+      <span class="pipe-num">02</span>
+      <span class="pipe-name">Load model</span>
+      <span class="pipe-desc">Off-the-shelf pretrained checkpoint per architecture family. No training loop.</span>
+    </div>
+    <div class="pipe-step">
+      <span class="pipe-num">03</span>
+      <span class="pipe-name">Extract score</span>
+      <span class="pipe-desc">Feed (query, URL) → get relevance logit. Record for evaluation.</span>
+    </div>
+    <div class="pipe-step">
+      <span class="pipe-num">04</span>
+      <span class="pipe-name">Run attribution</span>
+      <span class="pipe-desc">IG via captum. SHAP via shap.Explainer. ColBERT MaxSim natively. Attn rollout.</span>
+    </div>
+    <div class="pipe-step">
+      <span class="pipe-num">05</span>
+      <span class="pipe-name">Aggregate scores</span>
+      <span class="pipe-desc">Map token scores → URL component. Average across queries per component type.</span>
+    </div>
+    <div class="pipe-step">
+      <span class="pipe-num">06</span>
+      <span class="pipe-name">Faithfulness test</span>
+      <span class="pipe-desc">Mask top-k attributed tokens. Measure score drop (sufficiency / comprehensiveness).</span>
+    </div>
+    <div class="pipe-step">
+      <span class="pipe-num">07</span>
+      <span class="pipe-name">Crawl eval</span>
+      <span class="pipe-desc">Use attribution insight as URL ordering signal. Measure harvest ratio vs. baselines.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 4: EXPERIMENTS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">04 · Experiments &amp; evaluation</div>
+  <h2>What to run</h2>
+
+  <div class="exp-block">
+    <div class="exp-header">
+      <div class="exp-num">E1</div>
+      <div>
+        <div class="exp-title">Component-level attribution analysis</div>
+        <div class="exp-rq">RQ: Which URL component (scheme / subdomain / domain / TLD / path / query-param) contributes most to relevance prediction on average?</div>
+      </div>
+    </div>
+    <div class="exp-body">
+      Run all models on 5K query-URL pairs from MS MARCO. For each URL, compute IG attribution per token. Aggregate scores by component type. Report mean |attribution| per component. Expect domain and first path token to dominate. Compare whether cross-encoder and bi-encoder agree on ranking of components.
+    </div>
+    <div class="exp-metrics">
+      <span class="metric-tag">mean |attribution| per component</span>
+      <span class="metric-tag">rank correlation between models (Spearman ρ)</span>
+      <span class="metric-tag">component contribution % pie</span>
+    </div>
+  </div>
+
+  <div class="exp-block">
+    <div class="exp-header">
+      <div class="exp-num">E2</div>
+      <div>
+        <div class="exp-title">Attribution faithfulness evaluation</div>
+        <div class="exp-rq">RQ: Are the attribution scores actually causally related to the model's output, or are they noise?</div>
+      </div>
+    </div>
+    <div class="exp-body">
+      Two standard tests. <strong>Comprehensiveness</strong>: mask the top-k highest-attributed tokens and measure how much the relevance score drops — a faithful method should produce a large drop. <strong>Sufficiency</strong>: keep only the top-k tokens and measure how much score is retained. Compare IG, SHAP, attention rollout, and occlusion across all model types. Use your synthetic dataset as a controlled ground truth — inject query keywords in known positions and verify they receive top attribution.
+    </div>
+    <div class="exp-metrics">
+      <span class="metric-tag">comprehensiveness@k (score drop)</span>
+      <span class="metric-tag">sufficiency@k (score retained)</span>
+      <span class="metric-tag">top-k recall on synthetic URLs</span>
+      <span class="metric-tag">AOPC (area over perturbation curve)</span>
+    </div>
+  </div>
+
+  <div class="exp-block">
+    <div class="exp-header">
+      <div class="exp-num">E3</div>
+      <div>
+        <div class="exp-title">Query-conditioned attribution shift</div>
+        <div class="exp-rq">RQ: Does the set of important URL tokens change depending on the query?</div>
+      </div>
+    </div>
+    <div class="exp-body">
+      Hold the URL constant, vary the query. E.g., URL <code>https://pytorch.org/docs/stable/optim.html</code>. For query "Adam optimizer", does <code>optim</code> receive high attribution? For query "PyTorch documentation", does <code>docs</code> dominate instead? This is only observable in the cross-encoder — the bi-encoder will produce query-independent URL attributions. The difference between these is a key finding. Cluster queries by type (navigational / informational / transactional) and test whether attribution patterns differ.
+    </div>
+    <div class="exp-metrics">
+      <span class="metric-tag">attribution shift Δ across query types</span>
+      <span class="metric-tag">cosine similarity of attribution vectors per query cluster</span>
+      <span class="metric-tag">qualitative case studies</span>
+    </div>
+  </div>
+
+  <div class="exp-block">
+    <div class="exp-header">
+      <div class="exp-num">E4</div>
+      <div>
+        <div class="exp-title">Subword fragmentation effect on attribution</div>
+        <div class="exp-rq">RQ: When WordPiece splits a meaningful URL slug into subword fragments, does attribution scatter across them or concentrate correctly?</div>
+      </div>
+    </div>
+    <div class="exp-body">
+      Using the synthetic dataset: construct URLs with a known keyword in a path slug (e.g. <code>/optim/</code>). Run WordPiece tokenization and observe how the slug splits. Then run IG and check whether the summed attribution over all fragments of the slug equals the attribution a hypothetical whole-token slug would receive. Hypothesis: for cross-encoders, attribution concentrates on the fragment containing the keyword root (e.g. <code>op##tim</code> → <code>op</code> carries more). For late-interaction, MaxSim resolves to whichever fragment has the highest embedding similarity to the query token — test whether this is the semantically correct fragment.
+    </div>
+    <div class="exp-metrics">
+      <span class="metric-tag">attribution mass ratio: correct fragment vs. others</span>
+      <span class="metric-tag">top-1 fragment recall on synthetic URLs</span>
+      <span class="metric-tag">agreement across architecture families</span>
+    </div>
+  </div>
+
+  <div class="exp-block">
+    <div class="exp-header">
+      <div class="exp-num">E5</div>
+      <div>
+        <div class="exp-title">Attribution-guided URL ordering as a crawl policy</div>
+        <div class="exp-rq">RQ: Does using token attribution scores as a URL priority signal improve crawl efficiency over lexical and graph-based baselines?</div>
+      </div>
+    </div>
+    <div class="exp-body">
+      Extract the top-k attributed token types from E1 (e.g. "domain + first path token beat everything else"). Build a lightweight scoring function that uses only those token features. Simulate crawls on ClueWeb22 with this as the priority signal. Compare harvest ratio curves against: BFS (baseline), BM25 URL scoring, cross-encoder full URL scoring, and Craw4LLM (SOTA). This closes the loop — attribution insights directly improve the practical crawling system.
+    </div>
+    <div class="exp-metrics">
+      <span class="metric-tag">harvest ratio @k pages</span>
+      <span class="metric-tag">speedup over BFS</span>
+      <span class="metric-tag">MRR of first relevant page found</span>
+      <span class="metric-tag">latency (ms per URL scored)</span>
+    </div>
+  </div>
+
+  <h3>Benchmarks summary</h3>
+  <div class="card-grid-3">
+    <div class="card">
+      <div class="card-tag">Attribution eval</div>
+      <div class="card-title">Synthetic URL dataset</div>
+      <div class="card-body">Custom-built. Inject known keywords into specific URL positions. Ground truth for where the model should attend. Enables exact precision/recall on attribution.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Relevance eval</div>
+      <div class="card-title">MS MARCO + TREC Web Track</div>
+      <div class="card-body">Standard IR benchmarks. Measure MRR@10, NDCG@10. Verify that fine-tuned models are actually competitive before running attribution.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Crawl eval</div>
+      <div class="card-title">ClueWeb22 simulation</div>
+      <div class="card-body">900M web pages. Standard in Craw4LLM and Neural Prioritisation papers. Measure harvest ratio and speedup vs. BFS. Compare with published SOTA numbers.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 5: DISCUSSION -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">05 · Discussion</div>
+  <h2>Nice-to-have in the paper</h2>
+
+  <div class="callout">
+    <div class="callout-label">Fine-tuning as ablation (not main approach)</div>
+    <p>If time allows, fine-tune one model (e.g. MiniLM cross-encoder) on <code>(query, URL, label)</code> pairs from MS MARCO where the document is the URL string only — not the passage text. Then compare attribution patterns before and after fine-tuning. Does URL-specific training change <em>which</em> tokens the model attends to? This is a clean ablation that adds depth without being the main story.</p>
+  </div>
+    <p>Attribution methods will likely <strong>disagree</strong> between encoder and decoder models on which tokens matter. This disagreement is a finding, not a failure — it reveals that different architectures encode URL structure differently, and the crawl policy design should be tailored to the model family.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Practical implication</div>
+    <p>If E1 shows that <strong>domain + first path token</strong> explain ~80% of the variance in relevance prediction, you can build a near-zero-cost URL scorer that only needs to parse two tokens. This is a deployable insight for production crawlers that need to score millions of URLs per second.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Attribution method robustness</div>
+    <p>Discuss the <strong>attention-is-not-explanation</strong> problem explicitly. Show the discrepancy between attention rollout and IG/SHAP on the same URLs. This grounds the choice of IG/SHAP as primary methods and will be necessary to preempt reviewer pushback.</p>
+  </div>
+
+  <h3>Open questions worth raising</h3>
+  <ul>
+    <li><strong>Dynamic URLs:</strong> Many modern web apps generate URLs with UUIDs, session tokens, and encoded parameters. Attribution scores on these are meaningless. How should a system handle or filter them? This is an unsolved practical problem.</li>
+    <li><strong>Query type sensitivity:</strong> Navigational queries (where the user wants a specific site) will heavily attribute the domain token. Informational queries will attribute path tokens. Does a single model handle both, or should query-type routing be added?</li>
+    <li><strong>Multilingual URLs:</strong> Punycode-encoded domains, Chinese Pinyin paths, Arabic transliterations. Attribution over multilingual URL tokens is almost completely unstudied. Even just raising this as a limitation is a solid contribution.</li>
+    <li><strong>Anchor text as a bridge:</strong> The link that discovered the URL often has anchor text. Attribution over (anchor text + URL) jointly — what's the interaction? A future direction.</li>
+    <li><strong>Does more attribution accuracy mean better crawl policy?</strong> There's a potential decoupling — a slightly less faithful attribution method might still produce a better ordering signal. Discuss whether attribution evaluation and crawl evaluation should be treated as separate objectives.</li>
+  </ul>
+
+  <h3>Societal / ethical angle</h3>
+  <p>URL token attribution could be used adversarially — domain owners could learn which URL patterns get crawled first and structure their URLs to exploit that. This is the URL equivalent of keyword stuffing. Worth a brief mention for completeness.</p>
+</div>
+
+
+<div class="footer">
+  URL Token Attribution in Query-Driven Crawling · Research Plan · 2025–2026
+</div>
+
+</body>
+</html>
